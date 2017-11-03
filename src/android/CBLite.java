@@ -82,7 +82,7 @@ public class CBLite extends CordovaPlugin {
         System.out.println(action);
 
         if (action.equals("getURL")) {
-            return getUrl(callback);
+            return getUrl(callback, args);
         }
 
         if (action.equals("getSampleSets")) {
@@ -119,8 +119,9 @@ public class CBLite extends CordovaPlugin {
         return false;
     }
 
-    private boolean getSampleSets(CallbackContext callback) {
-        final Database database = getDb();
+    private boolean getSampleSets(final CallbackContext callback, final JSONArray args) {
+        final String dbName = "";
+        final Database database = getDb(dbName);
         final String viewName = "sampleset";
         final QueryOptions queryOptions = new QueryOptions();
         final View sampleSetsView = database.getView(viewName);
@@ -152,9 +153,9 @@ public class CBLite extends CordovaPlugin {
         return false;
     }
 
-    private Database getDb() {
+    private Database getDb(final String dbName) {
         try {
-            database = manager.getDatabase("app");
+            database = manager.getDatabase(dbName);
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }

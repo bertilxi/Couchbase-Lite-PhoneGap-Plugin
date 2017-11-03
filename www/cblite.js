@@ -21,7 +21,7 @@ var DataLayer = {
                 },
                 function error(error) {
                     if (error) reject(error)
-                }, PLUGIN_NAME, 'getSampleSets', [])
+                }, PLUGIN_NAME, 'getSampleSets', [dbName])
         })
     }
 }
