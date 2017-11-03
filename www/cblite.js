@@ -11,7 +11,7 @@ var DataLayer = {
                     resolve(url)
                 },
                 function error(error) {
-                    reject(error)
+                    if (error) reject(error)
                 }, PLUGIN_NAME, "getURL", [])
         })
     },
@@ -22,7 +22,7 @@ var DataLayer = {
                     resolve(data)
                 },
                 function error(error) {
-                    reject(error)
+                    if (error) reject(error)
                 }, PLUGIN_NAME, 'getSampleSets', [])
         })
     }
