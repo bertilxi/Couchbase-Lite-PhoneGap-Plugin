@@ -13,7 +13,7 @@ var DataLayer = {
                 callback(err);
             }, PLUGIN_NAME, "getURL", []);
     },
-    getSampleSets: function () {
+    getSampleSets: function (dbName) {
         return new Promise(function (resolve, reject) {
             cordova.exec(
                 function success(data) {
