@@ -77,6 +77,10 @@ public class CBLite extends CordovaPlugin {
 
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callback) {
+
+        System.out.println("--- action ---");
+        System.out.println(action);
+
         if (action.equals("getURL")) {
             return getUrl(callback);
         }
