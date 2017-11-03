@@ -24,6 +24,7 @@ import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.List;
@@ -82,11 +83,11 @@ public class CBLite extends CordovaPlugin {
         System.out.println(action);
 
         if (action.equals("getURL")) {
-            return getUrl(callback, args);
+            return getUrl(callback);
         }
 
         if (action.equals("getSampleSets")) {
-            return getSampleSets(callback);
+            return getSampleSets(callback, args);
         }
 
         return false;
@@ -120,7 +121,15 @@ public class CBLite extends CordovaPlugin {
     }
 
     private boolean getSampleSets(final CallbackContext callback, final JSONArray args) {
-        final String dbName = "";
+
+        String dbName = "";
+
+        try {
+            dbName = args.getString(0);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         final Database database = getDb(dbName);
         final String viewName = "sampleset";
         final QueryOptions queryOptions = new QueryOptions();
