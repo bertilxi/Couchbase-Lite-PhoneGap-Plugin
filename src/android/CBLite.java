@@ -128,6 +128,7 @@ public class CBLite extends CordovaPlugin {
             dbName = args.getString(0);
             System.out.println("--- dbName ---");
             System.out.println(dbName);
+            System.out.println(manager.getAllDatabaseNames());
         } catch (JSONException e) {
             e.printStackTrace();
         }
