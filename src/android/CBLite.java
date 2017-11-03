@@ -141,6 +141,7 @@ public class CBLite extends CordovaPlugin {
             List<QueryRow> sampleSets = sampleSetsView.query(queryOptions);
             System.out.println("--- view ---");
             System.out.println(sampleSets);
+            callback.success(sampleSets);
             return true;
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
