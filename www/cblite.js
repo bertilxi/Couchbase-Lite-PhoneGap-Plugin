@@ -5,28 +5,26 @@ var DataLayer = {
         cordova.exec(cb, null, PLUGIN_NAME, 'echo', [phrase])
     },
     getURL: function () {
-        cordova.exec(success, error, PLUGIN_NAME, "getURL", [])
-
-        function success(url) {
-            // cb(false, url)
-            return Promise.resolve(url)
-        }
-        function error(error) {
-            // cb(err)
-            return Promise.reject(error)
-        }
+        return new Promise(function (resolve, reject) {
+            cordova.exec(
+                function success(url) {
+                    resolve(url)
+                },
+                function error(error) {
+                    reject(error)
+                }, PLUGIN_NAME, "getURL", [])
+        })
     },
     getSampleSets: function () {
-        cordova.exec(success, error, PLUGIN_NAME, 'getSampleSets', [])
-
-        function success(data) {
-            // cb(data)
-            return Promise.resolve(data)
-        }
-        function error(error) {
-            // cb(error)
-            return Promise.reject(error)
-        }
+        return new Promise(function (resolve, reject) {
+            cordova.exec(
+                function success(data) {
+                    resolve(data)
+                },
+                function error(error) {
+                    reject(error)
+                }, PLUGIN_NAME, 'getSampleSets', [])
+        })
     }
 }
 
