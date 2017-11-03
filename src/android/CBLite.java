@@ -137,6 +137,14 @@ public class CBLite extends CordovaPlugin {
         final QueryOptions queryOptions = new QueryOptions();
         final View sampleSetsView = database.getView(viewName);
 
+        try {
+            Map<String, Object> docs = database.getAllDocs(queryOptions);
+            System.out.println("--- all docs ---");
+            System.out.println(docs);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+
         if (sampleSetsView.getMap() == null) {
             sampleSetsView.setMap(new Mapper() {
                 @Override
