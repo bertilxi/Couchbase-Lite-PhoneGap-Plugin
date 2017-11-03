@@ -8,7 +8,7 @@ var DataLayer = {
         cordova.exec(function (url) { callback(false, url); }, function (err) { callback(err); }, PLUGIN_NAME, "getURL", []);
     },
     getSamples: function (view, cb) {
-        cordova.exec(cb, null, PLUGIN_NAME, 'getSamples', []);
+        cordova.exec(cb, null, PLUGIN_NAME, 'getSampleSets', []);
     }
 };
 
