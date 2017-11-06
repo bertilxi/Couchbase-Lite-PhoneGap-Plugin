@@ -8,6 +8,7 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.Emitter;
 import com.couchbase.lite.Manager;
 import com.couchbase.lite.Mapper;
+import com.couchbase.lite.Predicate;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryEnumerator;
 import com.couchbase.lite.QueryOptions;
@@ -165,17 +166,11 @@ public class CBLite extends CordovaPlugin {
 
         View listsView = database.getView(viewName);
         if (listsView.getMap() == null) {
-            final String finalMAppName = mAppName;
-            final Integer finalMLocationId = mLocationId;
             listsView.setMap(new Mapper() {
                 @Override
                 public void map(Map<String, Object> document, Emitter emitter) {
                     String type = (String) document.get("type");
-                    String appName = (String) document.get("app_name");
-                    Integer locationId = Integer.valueOf((String) document.get("location_id"));
-                    if ("sampleset".equals(type) &&
-                            finalMAppName.equals(appName) &&
-                            finalMLocationId.equals(locationId)) {
+                    if ("sampleset".equals(type)) {
                         emitter.emit(document, null);
                     }
                 }
@@ -185,6 +180,15 @@ public class CBLite extends CordovaPlugin {
         try {
             System.out.println("--- queries ---");
             query.setMapOnly(true);
+            final String finalMAppName = mAppName;
+            final Integer finalMLocationId = mLocationId;
+            queryOptions.setPostFilter(new Predicate<QueryRow>() {
+                @Override
+                public boolean apply(QueryRow queryRow) {
+                    Map<String, Object> obj = ((Map<String, Object>) queryRow.getKey());
+                    return obj.get("app_name").equals(finalMAppName) && obj.get("location_id").equals(finalMLocationId);
+                }
+            });
             QueryEnumerator result = query.run();
             JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
