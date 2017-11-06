@@ -132,8 +132,10 @@ public class CBLite extends CordovaPlugin {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+/*
 
         final Database database = getDb(dbName);
+
         final String viewName = "sampleset";
         final QueryOptions queryOptions = new QueryOptions();
         final View sampleSetsView = database.getView(viewName);
@@ -169,6 +171,7 @@ public class CBLite extends CordovaPlugin {
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
+*/
 
         return false;
     }
