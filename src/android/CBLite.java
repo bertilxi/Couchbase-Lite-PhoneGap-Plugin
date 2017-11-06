@@ -8,6 +8,8 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.Emitter;
 import com.couchbase.lite.Manager;
 import com.couchbase.lite.Mapper;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryEnumerator;
 import com.couchbase.lite.QueryOptions;
 import com.couchbase.lite.QueryRow;
 import com.couchbase.lite.View;
@@ -27,6 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -122,12 +125,13 @@ public class CBLite extends CordovaPlugin {
 
     private boolean getSampleSets(final CallbackContext callback, final JSONArray args) {
 
+        final String viewName = "sampleset";
         String dbName = "";
         String fullViewName = "";
 
         try {
             dbName = args.getString(0);
-            fullViewName = args.getString(1);
+            fullViewName = args.getString(1) + viewName;
             System.out.println("--- dbName ---");
             System.out.println(dbName);
             System.out.println(manager.getAllDatabaseNames());
@@ -137,12 +141,9 @@ public class CBLite extends CordovaPlugin {
 
 
         final Database database = getDb(dbName);
-
-
-        final String viewName = "sampleset";
         final QueryOptions queryOptions = new QueryOptions();
-        final View fullSampleSetsView = database.getView(fullViewName + viewName);
-        final View sampleSetsView = database.getView(viewName);
+        final Query query1 = database.getView(fullViewName).createQuery();
+        final Query query2 = database.getView(viewName).createQuery();
 
         try {
             Map<String, Object> docs = database.getAllDocs(queryOptions);
@@ -152,28 +153,21 @@ public class CBLite extends CordovaPlugin {
             e.printStackTrace();
         }
 
-/*        if (sampleSetsView.getMap() == null) {
-            sampleSetsView.setMap(new Mapper() {
-                @Override
-                public void map(Map<String, Object> document, Emitter emitter) {
-                    String type = (String) document.get("type");
-                    if ("sampleset".equals(type)) {
-                        emitter.emit(document.get("name"), null);
-                    }
-                }
-            }, "1.0");
-        }*/
-
         try {
-            List<QueryRow> fullSampleSets = sampleSetsView.query(queryOptions);
-            List<QueryRow> sampleSets = sampleSetsView.query(queryOptions);
-            final JSONArray fulllist = new JSONArray(fullSampleSets);
-            final JSONArray list = new JSONArray(sampleSets);
-            System.out.println("--- view ---");
-            System.out.println(sampleSets);
-            System.out.println(list);
-            System.out.println(fulllist);
-            callback.success(list);
+            System.out.println("--- queries ---");
+            QueryEnumerator result1 = query1.run();
+            QueryEnumerator result2 = query2.run();
+
+            for (; result1.hasNext(); ) {
+                QueryRow row = result1.next();
+                System.out.println(row.getKey() + " " + row.getValue().toString());
+            }
+
+            for (; result2.hasNext(); ) {
+                QueryRow row = result2.next();
+                System.out.println(row.getKey() + " " + row.getValue().toString());
+            }
+            callback.success(" ");
             return true;
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
