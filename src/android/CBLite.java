@@ -131,7 +131,7 @@ public class CBLite extends CordovaPlugin {
 
         try {
             dbName = args.getString(0);
-            fullViewName = args.getString(1) + viewName;
+            fullViewName = args.getString(1);
             System.out.println("--- dbName ---");
             System.out.println(dbName);
             System.out.println(manager.getAllDatabaseNames());
@@ -143,7 +143,7 @@ public class CBLite extends CordovaPlugin {
         final Database database = getDb(dbName);
         final QueryOptions queryOptions = new QueryOptions();
 
-        final Query query2 = database.getView(viewName).createQuery();
+        final Query query2 = database.getView(fullViewName).createQuery();
 
         try {
             Map<String, Object> docs = database.getAllDocs(queryOptions);
@@ -157,7 +157,7 @@ public class CBLite extends CordovaPlugin {
             System.out.println("--- queries ---");
 
             QueryEnumerator result2 = query2.run();
-            
+
             for (; result2.hasNext(); ) {
                 QueryRow row = result2.next();
                 System.out.println(row.getKey() + " " + row.getValue().toString());
