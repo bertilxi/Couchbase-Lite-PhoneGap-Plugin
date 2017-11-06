@@ -123,22 +123,25 @@ public class CBLite extends CordovaPlugin {
     private boolean getSampleSets(final CallbackContext callback, final JSONArray args) {
 
         String dbName = "";
+        String fullViewName = "";
 
         try {
             dbName = args.getString(0);
+            fullViewName = args.getString(1);
             System.out.println("--- dbName ---");
             System.out.println(dbName);
             System.out.println(manager.getAllDatabaseNames());
-            final Database database = getDb(dbName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-/*
+
 
         final Database database = getDb(dbName);
 
+
         final String viewName = "sampleset";
         final QueryOptions queryOptions = new QueryOptions();
+        final View fullSampleSetsView = database.getView(fullViewName + viewName);
         final View sampleSetsView = database.getView(viewName);
 
         try {
@@ -149,7 +152,7 @@ public class CBLite extends CordovaPlugin {
             e.printStackTrace();
         }
 
-        if (sampleSetsView.getMap() == null) {
+/*        if (sampleSetsView.getMap() == null) {
             sampleSetsView.setMap(new Mapper() {
                 @Override
                 public void map(Map<String, Object> document, Emitter emitter) {
@@ -159,27 +162,30 @@ public class CBLite extends CordovaPlugin {
                     }
                 }
             }, "1.0");
-        }
+        }*/
 
         try {
+            List<QueryRow> fullSampleSets = sampleSetsView.query(queryOptions);
             List<QueryRow> sampleSets = sampleSetsView.query(queryOptions);
+            final JSONArray fulllist = new JSONArray(fullSampleSets);
             final JSONArray list = new JSONArray(sampleSets);
             System.out.println("--- view ---");
             System.out.println(sampleSets);
             System.out.println(list);
+            System.out.println(fulllist);
             callback.success(list);
             return true;
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
-*/
+
 
         return false;
     }
 
     private Database getDb(final String dbName) {
         try {
-            database = manager.getDatabase(dbName);
+            database = manager.getExistingDatabase(dbName);
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
