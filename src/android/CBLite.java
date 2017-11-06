@@ -5,7 +5,9 @@ import android.content.Context;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
+import com.couchbase.lite.Emitter;
 import com.couchbase.lite.Manager;
+import com.couchbase.lite.Mapper;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryEnumerator;
 import com.couchbase.lite.QueryOptions;
@@ -27,7 +29,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class CBLite extends CordovaPlugin {
@@ -122,12 +126,11 @@ public class CBLite extends CordovaPlugin {
 
     private boolean getSampleSets(final CallbackContext callback, final JSONArray args) {
 
-        String viewName = "sampleset";
+        final String viewName = "sampleset";
         String dbName = "";
 
         try {
             dbName = args.getString(0);
-            viewName = args.getString(1);
             System.out.println("--- dbName ---");
             System.out.println(dbName);
             System.out.println(manager.getAllDatabaseNames());
@@ -138,6 +141,9 @@ public class CBLite extends CordovaPlugin {
 
         final Database database = getDb(dbName);
         final QueryOptions queryOptions = new QueryOptions();
+        List<Object> keys = new ArrayList<Object>();
+        keys.add("_design/ocf");
+        queryOptions.setKeys(keys);
 
         Query query = database.getView(viewName).createQuery();
 
@@ -145,12 +151,25 @@ public class CBLite extends CordovaPlugin {
             Map<String, Object> docs = database.getAllDocs(queryOptions);
             System.out.println("--- all docs ---");
             for (Map.Entry<String, Object> entry : docs.entrySet()) {
-                System.out.println(entry.getKey() + "/" + entry.getValue());
+                System.out.println(entry.getKey() + " / " + entry.getValue());
             }
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
 
+        View listsView = database.getView(viewName);
+        if (listsView.getMap() == null) {
+            listsView.setMap(new Mapper() {
+                @Override
+                public void map(Map<String, Object> document, Emitter emitter) {
+                    String type = (String) document.get("type");
+                    if (viewName.equals(type)) {
+                        emitter.emit(document, null);
+                    }
+                }
+            }, "1.0");
+        }
+        
         try {
             System.out.println("--- queries ---");
             query.setMapOnly(true);
