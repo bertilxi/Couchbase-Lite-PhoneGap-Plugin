@@ -13,6 +13,17 @@ var DataLayer = {
               callback(err)
             }, PLUGIN_NAME, 'getURL', [])
   },
+  getCookedSampleSets: function (dbName, appName, locationId) {
+    return new Promise(function (resolve, reject) {
+      cordova.exec(
+                function success (data) {
+                  resolve(data)
+                },
+                function error (error) {
+                  reject(error)
+                }, PLUGIN_NAME, 'getCookedSampleSets', [dbName, appName, locationId])
+    })
+  },
   getSampleSets: function (dbName, appName, locationId) {
     return new Promise(function (resolve, reject) {
       cordova.exec(
