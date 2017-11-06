@@ -122,13 +122,12 @@ public class CBLite extends CordovaPlugin {
 
     private boolean getSampleSets(final CallbackContext callback, final JSONArray args) {
 
-        final String viewName = "sampleset";
+        String viewName = "sampleset";
         String dbName = "";
-        String fullViewName = "";
 
         try {
             dbName = args.getString(0);
-            fullViewName = args.getString(1);
+            viewName = args.getString(1);
             System.out.println("--- dbName ---");
             System.out.println(dbName);
             System.out.println(manager.getAllDatabaseNames());
@@ -140,7 +139,7 @@ public class CBLite extends CordovaPlugin {
         final Database database = getDb(dbName);
         final QueryOptions queryOptions = new QueryOptions();
 
-        Query query = database.getView(fullViewName).createQuery();
+        Query query = database.getView(viewName).createQuery();
 
         try {
             Map<String, Object> docs = database.getAllDocs(queryOptions);
@@ -163,8 +162,7 @@ public class CBLite extends CordovaPlugin {
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
-
-
+        
         return false;
     }
 
