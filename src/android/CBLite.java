@@ -27,6 +27,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,19 +127,22 @@ public class CBLite extends CordovaPlugin {
 
     private boolean getSampleSets(final CallbackContext callback, final JSONArray args) {
 
-        final String viewName = "sampleset";
+        String viewName = "sampleset";
         String dbName = "";
+        String mAppName = "";
+        Integer mLocationId = -1;
 
         try {
             dbName = args.getString(0);
+            mAppName = args.getString(1);
+            mLocationId = args.getInt(2);
             System.out.println("--- dbName ---");
             System.out.println(dbName);
             System.out.println(manager.getAllDatabaseNames());
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
+        
         final Database database = getDb(dbName);
         final QueryOptions queryOptions = new QueryOptions();
         List<Object> keys = new ArrayList<Object>();
@@ -159,11 +163,17 @@ public class CBLite extends CordovaPlugin {
 
         View listsView = database.getView(viewName);
         if (listsView.getMap() == null) {
+            final String finalMAppName = mAppName;
+            final Integer finalMLocationId = mLocationId;
             listsView.setMap(new Mapper() {
                 @Override
                 public void map(Map<String, Object> document, Emitter emitter) {
                     String type = (String) document.get("type");
-                    if (viewName.equals(type)) {
+                    String appName = (String) document.get("app_name");
+                    Integer locationId = Integer.valueOf((String) document.get("location_id"));
+                    if ("sampleset".equals(type) &&
+                            finalMAppName.equals(appName) &&
+                            finalMLocationId.equals(locationId)) {
                         emitter.emit(document, null);
                     }
                 }
@@ -177,12 +187,15 @@ public class CBLite extends CordovaPlugin {
             JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
                 QueryRow row = it.next();
-                sampleSetsResult.put(row.getKey());
+                JSONObject sampleSet = new JSONObject(row.getKey().toString());
+                sampleSetsResult.put(sampleSet);
                 System.out.println(row.getKey() + " " + row.getValue());
             }
             callback.success(sampleSetsResult);
             return true;
         } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
