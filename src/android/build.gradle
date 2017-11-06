@@ -6,8 +6,9 @@ repositories{
 }
 
 dependencies {
-   compile(name:'couchbase-lite-android-1.4.0', ext:'aar')
-   compile(name:'couchbase-lite-android-sqlite-custom-1.4.0', ext:'aar')
+  compile 'com.google.code.gson:gson:2.8.2'
+  compile(name:'couchbase-lite-android-1.4.0', ext:'aar')
+  compile(name:'couchbase-lite-android-sqlite-custom-1.4.0', ext:'aar')
 }
 
 android {
