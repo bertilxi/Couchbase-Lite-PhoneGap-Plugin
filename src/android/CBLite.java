@@ -251,7 +251,7 @@ public class CBLite extends CordovaPlugin {
     private void buildLastSamples(List<Map<String, Object>> samples) {
 
         for (Map<String, Object> sample : samples) {
-            Long parentId = Long.valueOf((String) sample.get("parent_id"));
+            String parentId = String.valueOf(sample.get("parent_id"));
             Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
             Long lastSampleCreationDate = Long.valueOf((String) lastSample.get("creation_date"));
             Long sampleCreationDate = Long.valueOf((String) sample.get("creation_date"));
@@ -264,7 +264,7 @@ public class CBLite extends CordovaPlugin {
     private void separateNotEvaluatedSampleSets(List<Map<String, Object>> sampleSets, List<Map<String, Object>> samples) {
         List<Map<String, Object>> sampleSetsCopy = new ArrayList<Map<String, Object>>(sampleSets);
         for (Map<String, Object> sampleSet : sampleSetsCopy) {
-            Long parentId = Long.valueOf((String) sampleSet.get("_id"));
+            String parentId = String.valueOf(sampleSet.get("_id"));
             boolean wasEvaluated = findSampleSet(samples, parentId);
             if (wasEvaluated) {
                 evaluatedSampleSets.add(sampleSet);
@@ -274,9 +274,9 @@ public class CBLite extends CordovaPlugin {
         }
     }
 
-    private boolean findSampleSet(List<Map<String, Object>> samples, Long parentId) {
+    private boolean findSampleSet(List<Map<String, Object>> samples, String parentId) {
         for (Map<String, Object> sampleSet : samples) {
-            Long mParentId = Long.valueOf((String) sampleSet.get("parent_id"));
+            String mParentId = String.valueOf(sampleSet.get("parent_id"));
             if (mParentId.equals(parentId)) {
                 return true;
             }
@@ -286,7 +286,7 @@ public class CBLite extends CordovaPlugin {
 
     private void buildShownSampleSets(List<Map<String, Object>> sampleSets) {
         for (Map<String, Object> sampleSet : sampleSets) {
-            Long parentId = Long.valueOf((String) sampleSet.get("_id"));
+            String parentId = String.valueOf(sampleSet.get("_id"));
             Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
             mapAndPushLastSample(lastSample, sampleSet);
         }
