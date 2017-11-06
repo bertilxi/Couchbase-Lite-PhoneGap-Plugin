@@ -5,9 +5,7 @@ import android.content.Context;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
-import com.couchbase.lite.Emitter;
 import com.couchbase.lite.Manager;
-import com.couchbase.lite.Mapper;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryEnumerator;
 import com.couchbase.lite.QueryOptions;
@@ -30,7 +28,6 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class CBLite extends CordovaPlugin {
@@ -143,7 +140,7 @@ public class CBLite extends CordovaPlugin {
         final Database database = getDb(dbName);
         final QueryOptions queryOptions = new QueryOptions();
 
-        final Query query2 = database.getView(fullViewName).createQuery();
+        Query query = database.getView(fullViewName).createQuery();
 
         try {
             Map<String, Object> docs = database.getAllDocs(queryOptions);
@@ -155,11 +152,10 @@ public class CBLite extends CordovaPlugin {
 
         try {
             System.out.println("--- queries ---");
-
-            QueryEnumerator result2 = query2.run();
-
-            for (; result2.hasNext(); ) {
-                QueryRow row = result2.next();
+            query.setMapOnly(true);
+            QueryEnumerator result = query.run();
+            for (Iterator<QueryRow> it = result; it.hasNext(); ) {
+                QueryRow row = it.next();
                 System.out.println(row.getKey() + " " + row.getValue().toString());
             }
             callback.success(" ");
