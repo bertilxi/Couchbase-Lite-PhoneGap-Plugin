@@ -144,7 +144,9 @@ public class CBLite extends CordovaPlugin {
         try {
             Map<String, Object> docs = database.getAllDocs(queryOptions);
             System.out.println("--- all docs ---");
-            System.out.println(docs);
+            for (Map.Entry<String, Object> entry : docs.entrySet()) {
+                System.out.println(entry.getKey() + "/" + entry.getValue());
+            }
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
@@ -162,7 +164,7 @@ public class CBLite extends CordovaPlugin {
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
-        
+
         return false;
     }
 
