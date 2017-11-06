@@ -20,8 +20,30 @@ var DataLayer = {
                   resolve(data)
                 },
                 function error (error) {
-                  if (error) reject(error)
+                  reject(error)
                 }, PLUGIN_NAME, 'getSampleSets', [dbName, appName, locationId])
+    })
+  },
+  getSamples: function (dbName, appName, locationId) {
+    return new Promise(function (resolve, reject) {
+      cordova.exec(
+                function success (data) {
+                  resolve(data)
+                },
+                function error (error) {
+                  reject(error)
+                }, PLUGIN_NAME, 'getSamples', [dbName, appName, locationId])
+    })
+  },
+  createViews: function (dbName) {
+    return new Promise(function (resolve, reject) {
+      cordova.exec(
+                function success (data) {
+                  resolve(data)
+                },
+                function error (error) {
+                  reject(error)
+                }, PLUGIN_NAME, 'createViews', [dbName])
     })
   }
 }

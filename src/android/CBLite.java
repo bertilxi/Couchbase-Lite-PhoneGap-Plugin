@@ -98,7 +98,48 @@ public class CBLite extends CordovaPlugin {
             return getSampleSets(callback, args);
         }
 
+        if (action.equals("getSamples")) {
+            return getSamples(callback, args);
+        }
+
+        if (action.equals("createViews")) {
+            return createViews(callback, args);
+        }
+
         return false;
+    }
+
+    private boolean createViews(final CallbackContext callback, final JSONArray args){
+        String dbName = "";
+
+        try {
+            dbName = args.getString(0);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final Database database = getDb(dbName);
+
+        createView(database, "sampleset");
+        createView(database, "sample");
+        callback.success();
+        return true;
+    }
+
+    private void createView(Database database, final String view){
+        final View sampleSetView = database.getView(view);
+
+        if (sampleSetView.getMap() == null) {
+            sampleSetView.setMap(new Mapper() {
+                @Override
+                public void map(Map<String, Object> document, Emitter emitter) {
+                    String type = (String) document.get("type");
+                    if (view.equals(type)) {
+                        emitter.emit(document, null);
+                    }
+                }
+            }, "1.0");
+        }
     }
 
     private boolean getUrl(final CallbackContext callback) {
@@ -139,44 +180,16 @@ public class CBLite extends CordovaPlugin {
             dbName = args.getString(0);
             mAppName = args.getString(1);
             mLocationId = args.getInt(2);
-            System.out.println("--- dbName ---");
-            System.out.println(dbName);
-            System.out.println(manager.getAllDatabaseNames());
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        
+
         final Database database = getDb(dbName);
-        final QueryOptions queryOptions = new QueryOptions();
 
         Query query = database.getView(viewName).createQuery();
+        query.setMapOnly(true);
 
         try {
-            Map<String, Object> docs = database.getAllDocs(queryOptions);
-            System.out.println("--- all docs ---");
-            for (Map.Entry<String, Object> entry : docs.entrySet()) {
-                System.out.println(entry.getKey() + " / " + entry.getValue());
-            }
-        } catch (CouchbaseLiteException e) {
-            e.printStackTrace();
-        }
-
-        View listsView = database.getView(viewName);
-        if (listsView.getMap() == null) {
-            listsView.setMap(new Mapper() {
-                @Override
-                public void map(Map<String, Object> document, Emitter emitter) {
-                    String type = (String) document.get("type");
-                    if ("sampleset".equals(type)) {
-                        emitter.emit(document, null);
-                    }
-                }
-            }, "1.0");
-        }
-
-        try {
-            System.out.println("--- queries ---");
-            query.setMapOnly(true);
             QueryEnumerator result = query.run();
             JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
@@ -186,16 +199,64 @@ public class CBLite extends CordovaPlugin {
                     String json =  gson.toJson(row.getKey());
                     JSONObject sampleSet = new JSONObject(json);
                     sampleSetsResult.put(sampleSet);
-                    System.out.println(row.getKey() + " " + row.getValue());
                 }
             }
             callback.success(sampleSetsResult);
             return true;
         } catch (CouchbaseLiteException e) {
+            callback.error("db error");
             e.printStackTrace();
+        } catch (JSONException e) {
+            callback.error("json parse error");
+            e.printStackTrace();
+        }
+
+
+        return false;
+    }
+
+    private boolean getSamples(final CallbackContext callback, final JSONArray args) {
+
+        String viewName = "sample";
+        String dbName = "";
+        String mAppName = "";
+        Integer mLocationId = -1;
+
+        try {
+            dbName = args.getString(0);
+            mAppName = args.getString(1);
+            mLocationId = args.getInt(2);
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        final Database database = getDb(dbName);
+
+        Query query = database.getView(viewName).createQuery();
+        query.setMapOnly(true);
+
+        try {
+            QueryEnumerator result = query.run();
+            JSONArray sampleSetsResult = new JSONArray();
+            for (Iterator<QueryRow> it = result; it.hasNext(); ) {
+                QueryRow row = it.next();
+                Map<String, Object> obj = ((Map<String, Object>) row.getKey());
+                if(obj.get("app_name").equals(mAppName) && obj.get("location_id").equals(mLocationId)){
+                    String json =  gson.toJson(row.getKey());
+                    JSONObject sampleSet = new JSONObject(json);
+                    sampleSetsResult.put(sampleSet);
+                }
+            }
+            callback.success(sampleSetsResult);
+            return true;
+        } catch (CouchbaseLiteException e) {
+            callback.error("db error");
+            e.printStackTrace();
+        } catch (JSONException e) {
+            callback.error("json parse error");
+            e.printStackTrace();
+        }
+
 
         return false;
     }
