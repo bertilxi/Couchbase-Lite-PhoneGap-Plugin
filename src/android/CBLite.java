@@ -142,7 +142,7 @@ public class CBLite extends CordovaPlugin {
 
         final Database database = getDb(dbName);
         final QueryOptions queryOptions = new QueryOptions();
-        final Query query1 = database.getView(fullViewName).createQuery();
+
         final Query query2 = database.getView(viewName).createQuery();
 
         try {
@@ -155,14 +155,9 @@ public class CBLite extends CordovaPlugin {
 
         try {
             System.out.println("--- queries ---");
-            QueryEnumerator result1 = query1.run();
+
             QueryEnumerator result2 = query2.run();
-
-            for (; result1.hasNext(); ) {
-                QueryRow row = result1.next();
-                System.out.println(row.getKey() + " " + row.getValue().toString());
-            }
-
+            
             for (; result2.hasNext(); ) {
                 QueryRow row = result2.next();
                 System.out.println(row.getKey() + " " + row.getValue().toString());
