@@ -148,9 +148,6 @@ public class CBLite extends CordovaPlugin {
         
         final Database database = getDb(dbName);
         final QueryOptions queryOptions = new QueryOptions();
-        List<Object> keys = new ArrayList<Object>();
-        keys.add("_design/ocf");
-        queryOptions.setKeys(keys);
 
         Query query = database.getView(viewName).createQuery();
 
@@ -180,23 +177,17 @@ public class CBLite extends CordovaPlugin {
         try {
             System.out.println("--- queries ---");
             query.setMapOnly(true);
-            final String finalMAppName = mAppName;
-            final Integer finalMLocationId = mLocationId;
-            queryOptions.setPostFilter(new Predicate<QueryRow>() {
-                @Override
-                public boolean apply(QueryRow queryRow) {
-                    Map<String, Object> obj = ((Map<String, Object>) queryRow.getKey());
-                    return obj.get("app_name").equals(finalMAppName) && obj.get("location_id").equals(finalMLocationId);
-                }
-            });
             QueryEnumerator result = query.run();
             JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
                 QueryRow row = it.next();
-                String json =  gson.toJson(row.getKey());
-                JSONObject sampleSet = new JSONObject(json);
-                sampleSetsResult.put(sampleSet);
-                System.out.println(row.getKey() + " " + row.getValue());
+                Map<String, Object> obj = ((Map<String, Object>) row.getKey());
+                if(obj.get("app_name").equals(mAppName) && obj.get("location_id").equals(mLocationId)){
+                    String json =  gson.toJson(row.getKey());
+                    JSONObject sampleSet = new JSONObject(json);
+                    sampleSetsResult.put(sampleSet);
+                    System.out.println(row.getKey() + " " + row.getValue());
+                }
             }
             callback.success(sampleSetsResult);
             return true;
