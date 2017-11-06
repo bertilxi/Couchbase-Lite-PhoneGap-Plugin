@@ -169,14 +169,14 @@ public class CBLite extends CordovaPlugin {
                 }
             }, "1.0");
         }
-        
+
         try {
             System.out.println("--- queries ---");
             query.setMapOnly(true);
             QueryEnumerator result = query.run();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
                 QueryRow row = it.next();
-                System.out.println(row.getKey() + " " + row.getValue().toString());
+                System.out.println(row.getKey() + " " + row.getValue());
             }
             callback.success(" ");
             return true;
