@@ -13,7 +13,7 @@ var DataLayer = {
               callback(err)
             }, PLUGIN_NAME, 'getURL', [])
   },
-  getSampleSets: function (dbName) {
+  getSampleSets: function (dbName, viewName) {
     return new Promise(function (resolve, reject) {
       cordova.exec(
                 function success (data) {
@@ -21,7 +21,7 @@ var DataLayer = {
                 },
                 function error (error) {
                   if (error) reject(error)
-                }, PLUGIN_NAME, 'getSampleSets', [dbName])
+                }, PLUGIN_NAME, 'getSampleSets', [dbName, viewName])
     })
   }
 }
