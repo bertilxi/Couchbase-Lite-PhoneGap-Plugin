@@ -193,8 +193,10 @@ public class CBLite extends CordovaPlugin {
 
         final Database database = getDb(dbName);
 
-        Query query = database.getView(viewName).createQuery();
-        query.setMapOnly(true);
+        Query sampleSetsQuery = database.getView(viewName).createQuery();
+        Query samplesQuery = database.getView("sample").createQuery();
+        sampleSetsQuery.setMapOnly(true);
+        samplesQuery.setMapOnly(true);
 
         evaluatedSampleSets = new ArrayList<Map<String, Object>>();
         shownSamplesets = new ArrayList<Map<String, Object>>();
@@ -203,9 +205,19 @@ public class CBLite extends CordovaPlugin {
         List<Map<String, Object>> samples = new ArrayList<Map<String, Object>>();
 
         try {
-            QueryEnumerator result = query.run();
-            JSONArray sampleSetsResult = new JSONArray();
-            for (Iterator<QueryRow> it = result; it.hasNext(); ) {
+            QueryEnumerator samplesResult = samplesQuery.run();
+
+            for (Iterator<QueryRow> it = samplesResult; it.hasNext(); ) {
+                QueryRow row = it.next();
+                Map<String, Object> sample = ((Map<String, Object>) row.getKey());
+                if (sample.get("app_name").equals(mAppName) && sample.get("location_id").equals(mLocationId)) {
+                    samples.add(sample);
+                }
+            }
+
+            QueryEnumerator sampleSetsresult = sampleSetsQuery.run();
+
+            for (Iterator<QueryRow> it = sampleSetsresult; it.hasNext(); ) {
                 QueryRow row = it.next();
                 Map<String, Object> sampleSet = ((Map<String, Object>) row.getKey());
                 if (sampleSet.get("app_name").equals(mAppName) && sampleSet.get("location_id").equals(mLocationId)) {
@@ -236,7 +248,7 @@ public class CBLite extends CordovaPlugin {
         buildShownSampleSets(evaluatedSampleSets);
 
         String json = gson.toJson(shownSamplesets);
-        JSONArray result = null;
+        JSONArray result;
         try {
             result = new JSONArray(json);
         } catch (JSONException e) {
