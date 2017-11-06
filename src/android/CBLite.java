@@ -174,11 +174,13 @@ public class CBLite extends CordovaPlugin {
             System.out.println("--- queries ---");
             query.setMapOnly(true);
             QueryEnumerator result = query.run();
+            JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
                 QueryRow row = it.next();
+                sampleSetsResult.put(row.getKey());
                 System.out.println(row.getKey() + " " + row.getValue());
             }
-            callback.success(" ");
+            callback.success(sampleSetsResult);
             return true;
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
