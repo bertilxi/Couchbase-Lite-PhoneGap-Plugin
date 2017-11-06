@@ -20,6 +20,7 @@ import com.couchbase.lite.listener.Credentials;
 import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.router.URLStreamHandlerFactory;
 import com.couchbase.lite.util.Log;
+import com.google.gson.Gson;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -46,6 +47,7 @@ public class CBLite extends CordovaPlugin {
     private Database database = null;
     private LiteListener listener = null;
     private Manager manager;
+    private Gson gson = new Gson();
 
     public CBLite() {
         super();
@@ -187,7 +189,8 @@ public class CBLite extends CordovaPlugin {
             JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
                 QueryRow row = it.next();
-                JSONObject sampleSet = new JSONObject(row.getKey().toString());
+                String json =  gson.toJson(row.getKey());
+                JSONObject sampleSet = new JSONObject(json);
                 sampleSetsResult.put(sampleSet);
                 System.out.println(row.getKey() + " " + row.getValue());
             }
