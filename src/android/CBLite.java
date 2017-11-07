@@ -192,16 +192,16 @@ public class CBLite extends CordovaPlugin {
 
         final Database database = getDb(dbName);
 
-        Query sampleSetsQuery = database.getView("sampleset").createQuery();
-        Query samplesQuery = database.getView("sample").createQuery();
+        final Query sampleSetsQuery = database.getView("sampleset").createQuery();
+        final Query samplesQuery = database.getView("sample").createQuery();
         sampleSetsQuery.setMapOnly(true);
         samplesQuery.setMapOnly(true);
 
         evaluatedSampleSets = new ArrayList<Map<String, Object>>();
         shownSamplesets = new ArrayList<Map<String, Object>>();
         lastSamples = new HashMap<String, Object>();
-        List<Map<String, Object>> sampleSets = new ArrayList<Map<String, Object>>();
-        List<Map<String, Object>> samples = new ArrayList<Map<String, Object>>();
+        final List<Map<String, Object>> sampleSets = new ArrayList<Map<String, Object>>();
+        final List<Map<String, Object>> samples = new ArrayList<Map<String, Object>>();
 
         try {
             QueryEnumerator samplesResult = samplesQuery.run();
@@ -215,6 +215,7 @@ public class CBLite extends CordovaPlugin {
             }
             System.out.println("--- samples");
             System.out.println(samples);
+            System.out.println(samples.size());
 
             QueryEnumerator sampleSetsresult = sampleSetsQuery.run();
 
@@ -226,7 +227,8 @@ public class CBLite extends CordovaPlugin {
                 }
             }
             System.out.println("--- sampleSets");
-            System.out.println(samples);
+            System.out.println(sampleSets);
+            System.out.println(sampleSets.size());
 
         } catch (CouchbaseLiteException e) {
             callback.error("db error");
@@ -252,10 +254,11 @@ public class CBLite extends CordovaPlugin {
 
         System.out.println("--- shownSamplesets");
         System.out.println(shownSamplesets);
+        System.out.println(shownSamplesets.size());
 
         // String json = gson.toJson(shownSamplesets);
         // result = new JSONArray(json);
-        JSONArray result = new JSONArray(shownSamplesets);
+        final JSONArray result = new JSONArray(shownSamplesets);
         callback.success(result);
         return true;
     }
