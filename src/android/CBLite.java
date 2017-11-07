@@ -311,8 +311,8 @@ public class CBLite extends CordovaPlugin {
             return false;
         }
 
-        System.out.print("--- sampleSet");
-        System.out.print(sampleSet);
+        System.out.println("--- sampleSet");
+        System.out.println(sampleSet);
 
         if (sampleSet == null) {
             callback.error("No sampleSet found");
@@ -321,7 +321,7 @@ public class CBLite extends CordovaPlugin {
 
         sampleSet = mapLastSample(samples, sampleSet);
 
-        System.out.print(sampleSet);
+        System.out.println(sampleSet);
 
         final JSONObject result = new JSONObject(sampleSet);
         callback.success(result);
@@ -353,8 +353,9 @@ public class CBLite extends CordovaPlugin {
     private Map<String, Object> mapLastSample(final List<Map<String, Object>> samples,final Map<String, Object> sampleSet) {
         String parentId = String.valueOf(sampleSet.get("_id"));
         Map<String, Object> lastSample = getLastSample(samples, parentId);
-        if (sampleSet == null || lastSample == null) {
-            return null;
+        
+        if (lastSample == null) {
+            return sampleSet;
         }
 
         Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
