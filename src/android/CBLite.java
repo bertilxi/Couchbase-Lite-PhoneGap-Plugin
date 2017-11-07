@@ -213,10 +213,7 @@ public class CBLite extends CordovaPlugin {
                     samples.add(sample);
                 }
             }
-            System.out.println("--- samples");
-            System.out.println(samples);
-            System.out.println(samples.size());
-
+            
             QueryEnumerator sampleSetsresult = sampleSetsQuery.run();
 
             for (Iterator<QueryRow> it = sampleSetsresult; it.hasNext(); ) {
@@ -226,22 +223,14 @@ public class CBLite extends CordovaPlugin {
                     sampleSets.add(sampleSet);
                 }
             }
-            System.out.println("--- sampleSets");
-            System.out.println(sampleSets);
-            System.out.println(sampleSets.size());
-
+            
         } catch (CouchbaseLiteException e) {
             callback.error("db error");
             e.printStackTrace();
             callback.error("");
             return false;
         }
-
-        for (Map<String, Object> sample : samples) {
-            System.out.println("--- sample");
-            System.out.println(sample);
-        }
-
+        
         buildLastSamples(samples);
         separateNotEvaluatedSampleSets(sampleSets, samples);
         for (Map<String, Object> sampleSet : shownSamplesets) {
@@ -256,13 +245,7 @@ public class CBLite extends CordovaPlugin {
             sampleSet.put("content", content);
         }
         buildShownSampleSets(evaluatedSampleSets);
-
-        System.out.println("--- shownSamplesets");
-        System.out.println(shownSamplesets);
-        System.out.println(shownSamplesets.size());
-
-        // String json = gson.toJson(shownSamplesets);
-        // result = new JSONArray(json);
+        
         final JSONArray result = new JSONArray(shownSamplesets);
         callback.success(result);
         return true;
@@ -273,11 +256,7 @@ public class CBLite extends CordovaPlugin {
             String parentId = String.valueOf(sample.get("parent_id"));
             Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
             long lastSampleCreationDate = 0L;
-
-            System.out.println("--- Long");
-            System.out.println(sample.get("creation_date"));
-            System.out.println(String.valueOf(sample.get("creation_date")));
-
+            
             try {
                 if (lastSample != null) {
                     lastSampleCreationDate = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
@@ -292,9 +271,6 @@ public class CBLite extends CordovaPlugin {
             }
 
         }
-        System.out.println("--- buildLastSamples");
-        System.out.println(lastSamples);
-        System.out.println(lastSamples.size());
     }
 
     private void separateNotEvaluatedSampleSets(List<Map<String, Object>> sampleSets, List<Map<String, Object>> samples) {
