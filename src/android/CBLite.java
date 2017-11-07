@@ -43,7 +43,7 @@ public class CBLite extends CordovaPlugin {
     private boolean initFailed = false;
     private int listenPort;
     private Credentials allowedCredentials;
-    
+
     private Database database = null;
     private LiteListener listener = null;
     private Manager manager;
@@ -206,7 +206,7 @@ public class CBLite extends CordovaPlugin {
 
         try {
             QueryEnumerator samplesResult = samplesQuery.run();
-            
+
             for (Iterator<QueryRow> it = samplesResult; it.hasNext(); ) {
                 QueryRow row = it.next();
                 Map<String, Object> sample = ((Map<String, Object>) row.getValue());
@@ -307,7 +307,7 @@ public class CBLite extends CordovaPlugin {
             callback.error("");
             return false;
         }
-        
+
         if (sampleSet == null) {
             callback.error("No sampleSet found");
             return false;
@@ -356,8 +356,8 @@ public class CBLite extends CordovaPlugin {
         boolean disposed = false;
         boolean readyForDisposal = false;
         boolean eol = false;
-        String endOfLife = null;
-        String eolReason = null;
+        String endOfLife = "";
+        String eolReason = "";
         Date beforeToday = new Date();
         beforeToday.setDate(beforeToday.getDate() - 2);
         long lastEvaluation = beforeToday.getTime();
@@ -392,7 +392,7 @@ public class CBLite extends CordovaPlugin {
         content.put("eol", eol);
         content.put("eolReason", eolReason);
         sampleSet.put("content", content);
-        
+
         return sampleSet;
     }
 
@@ -443,21 +443,21 @@ public class CBLite extends CordovaPlugin {
 
     private void buildShownSampleSets(final List<Map<String, Object>> sampleSets) {
         for (Map<String, Object> sampleSet : sampleSets) {
-            String parentId = String.valueOf(sampleSet.get("_id"));
-            Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
-            mapAndPushLastSample(lastSample, sampleSet);
+            mapAndPushLastSample(sampleSet);
         }
     }
 
-    private void mapAndPushLastSample(final Map<String, Object> lastSample, final Map<String, Object> sampleSet) {
+    private void mapAndPushLastSample(final Map<String, Object> sampleSet) {
 
+        String parentId = String.valueOf(sampleSet.get("_id"));
+        Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
         Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
 
         boolean disposed = false;
         boolean readyForDisposal = false;
         boolean eol = false;
-        String endOfLife = null;
-        String eolReason = null;
+        String endOfLife = "";
+        String eolReason = "";
         Date beforeToday = new Date();
         beforeToday.setDate(beforeToday.getDate() - 2);
         long lastEvaluation = beforeToday.getTime();
