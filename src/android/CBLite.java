@@ -210,10 +210,12 @@ public class CBLite extends CordovaPlugin {
         try {
             QueryEnumerator samplesResult = samplesQuery.run();
 
+            System.out.println("--- Iterator samples");
             for (Iterator<QueryRow> it = samplesResult; it.hasNext(); ) {
                 QueryRow row = it.next();
                 Map<String, Object> sample = ((Map<String, Object>) row.getValue());
                 if (sample.get("app_name").equals(mAppName) && sample.get("location_id").equals(mLocationId)) {
+                    System.out.println(sample);
                     samples.add(sample);
                 }
             }
@@ -344,9 +346,9 @@ public class CBLite extends CordovaPlugin {
             }
             long lastSampleCreationDate = 0L;
             if (lastSample != null) {
-                lastSampleCreationDate = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+                lastSampleCreationDate = Double.valueOf(String.valueOf(lastSample.get("creation_date"))).longValue();
             }
-            long sampleCreationDate = Long.valueOf(String.valueOf(sample.get("creation_date")));
+            long sampleCreationDate = Double.valueOf(String.valueOf(sample.get("creation_date"))).longValue();
             if (lastSample == null || lastSampleCreationDate < sampleCreationDate) {
                 lastSample = sample;
             }
@@ -381,7 +383,7 @@ public class CBLite extends CordovaPlugin {
                     Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) :
                     Boolean.valueOf(String.valueOf(content.get("ready_for_disposal")));
 
-            lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+            lastEvaluation = Double.valueOf(String.valueOf(lastSample.get("creation_date"))).longValue();
             Date nextEvaluationDate = new Date(lastEvaluation);
             nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
             nextEvaluation = nextEvaluationDate.getTime();
@@ -416,18 +418,10 @@ public class CBLite extends CordovaPlugin {
 
             try {
                 if (lastSample != null) {
-                    lastSampleCreationDate = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
-                }
-                
-                long sampleCreationDate = 0L;
-                
-                if (Long.class.isAssignableFrom(sample.get("creation_date").getClass())) {
-                    sampleCreationDate = (Long) sample.get("creation_date");
-                } else {
-                    System.out.println("--- clazz");
-                    System.out.println(sample.get("creation_date").getClass());
+                    lastSampleCreationDate = Double.valueOf(String.valueOf(lastSample.get("creation_date"))).longValue();
                 }
 
+                long sampleCreationDate = Double.valueOf(String.valueOf(sample.get("creation_date"))).longValue();
                 if (lastSample == null || lastSampleCreationDate < sampleCreationDate) {
                     lastSamples.put(parentId, sample);
                 }
@@ -488,7 +482,7 @@ public class CBLite extends CordovaPlugin {
 
         content.put("ready_for_disposal", readyForDisposal);
 
-        long lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+        long lastEvaluation = Double.valueOf(String.valueOf(lastSample.get("creation_date"))).longValue();
         content.put("last_evaluation", lastEvaluation);
         Date nextEvaluationDate = new Date(lastEvaluation);
         nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
