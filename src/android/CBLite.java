@@ -418,8 +418,16 @@ public class CBLite extends CordovaPlugin {
                 if (lastSample != null) {
                     lastSampleCreationDate = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
                 }
+                
+                long sampleCreationDate = 0L;
+                
+                if (Long.class.isAssignableFrom(sample.get("creation_date").getClass())) {
+                    sampleCreationDate = (Long) sample.get("creation_date");
+                } else {
+                    System.out.println("--- clazz");
+                    System.out.println(sample.get("creation_date").getClass());
+                }
 
-                long sampleCreationDate = Long.valueOf(String.valueOf(sample.get("creation_date")));
                 if (lastSample == null || lastSampleCreationDate < sampleCreationDate) {
                     lastSamples.put(parentId, sample);
                 }
