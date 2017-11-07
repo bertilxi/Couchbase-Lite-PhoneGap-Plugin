@@ -178,7 +178,6 @@ public class CBLite extends CordovaPlugin {
 
     private boolean getCookedSampleSets(final CallbackContext callback, final JSONArray args) {
 
-        String viewName = "sampleset";
         String dbName = "";
         String mAppName = "";
         Integer mLocationId = -1;
@@ -193,16 +192,16 @@ public class CBLite extends CordovaPlugin {
 
         final Database database = getDb(dbName);
 
-        Query sampleSetsQuery = database.getView(viewName).createQuery();
+        Query sampleSetsQuery = database.getView("sampleset").createQuery();
         Query samplesQuery = database.getView("sample").createQuery();
         sampleSetsQuery.setMapOnly(true);
         samplesQuery.setMapOnly(true);
 
-        evaluatedSampleSets = new ArrayList<Map<String, Object>>();
-        shownSamplesets = new ArrayList<Map<String, Object>>();
-        lastSamples = new HashMap<String, Object>();
-        List<Map<String, Object>> sampleSets = new ArrayList<Map<String, Object>>();
-        List<Map<String, Object>> samples = new ArrayList<Map<String, Object>>();
+        evaluatedSampleSets = new ArrayList<>();
+        shownSamplesets = new ArrayList<>();
+        lastSamples = new HashMap<>();
+        List<Map<String, Object>> sampleSets = new ArrayList<>();
+        List<Map<String, Object>> samples = new ArrayList<>();
 
         try {
             QueryEnumerator samplesResult = samplesQuery.run();
@@ -214,6 +213,8 @@ public class CBLite extends CordovaPlugin {
                     samples.add(sample);
                 }
             }
+            System.out.println("--- samples");
+            System.out.println(samples);
 
             QueryEnumerator sampleSetsresult = sampleSetsQuery.run();
 
@@ -224,6 +225,8 @@ public class CBLite extends CordovaPlugin {
                     sampleSets.add(sampleSet);
                 }
             }
+            System.out.println("--- sampleSets");
+            System.out.println(samples);
 
         } catch (CouchbaseLiteException e) {
             callback.error("db error");
@@ -247,15 +250,12 @@ public class CBLite extends CordovaPlugin {
         }
         buildShownSampleSets(evaluatedSampleSets);
 
-        String json = gson.toJson(shownSamplesets);
-        JSONArray result;
-        try {
-            result = new JSONArray(json);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            callback.error("");
-            return false;
-        }
+        System.out.println("--- shownSamplesets");
+        System.out.println(shownSamplesets);
+
+        // String json = gson.toJson(shownSamplesets);
+        // result = new JSONArray(json);
+        JSONArray result = new JSONArray(shownSamplesets);
         callback.success(result);
         return true;
     }
@@ -269,7 +269,7 @@ public class CBLite extends CordovaPlugin {
             if (lastSample == null) {
                 continue;
             }
-            
+
             Long lastSampleCreationDate = Long.valueOf((String) lastSample.get("creation_date"));
             Long sampleCreationDate = Long.valueOf((String) sample.get("creation_date"));
             if (lastSample == null || (lastSample != null && lastSampleCreationDate < sampleCreationDate)) {
