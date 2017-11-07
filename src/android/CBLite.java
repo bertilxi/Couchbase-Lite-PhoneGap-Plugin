@@ -146,7 +146,7 @@ public class CBLite extends CordovaPlugin {
                 public void map(Map<String, Object> document, Emitter emitter) {
                     String type = String.valueOf(document.get("type"));
                     if (view.equals(type)) {
-                        emitter.emit(document.get("id"), document);
+                        emitter.emit(document.get("_id"), document);
                     }
                 }
             }, "1.0");
@@ -313,12 +313,12 @@ public class CBLite extends CordovaPlugin {
 
         System.out.print("--- sampleSet");
         System.out.print(sampleSet);
-        
+
         if (sampleSet == null) {
             callback.error("No sampleSet found");
             return false;
         }
-        
+
         sampleSet = mapLastSample(samples, sampleSet);
 
         System.out.print(sampleSet);
