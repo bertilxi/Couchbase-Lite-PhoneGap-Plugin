@@ -43,8 +43,7 @@ public class CBLite extends CordovaPlugin {
     private boolean initFailed = false;
     private int listenPort;
     private Credentials allowedCredentials;
-
-    private String baseUrl = "";
+    
     private Database database = null;
     private LiteListener listener = null;
     private Manager manager;
@@ -167,9 +166,7 @@ public class CBLite extends CordovaPlugin {
                         allowedCredentials.getPassword(),
                         listenPort
                 );
-                baseUrl = callbackRespone;
                 callback.success(callbackRespone);
-
                 return true;
             }
 
@@ -209,13 +206,11 @@ public class CBLite extends CordovaPlugin {
 
         try {
             QueryEnumerator samplesResult = samplesQuery.run();
-
-            System.out.println("--- Iterator samples");
+            
             for (Iterator<QueryRow> it = samplesResult; it.hasNext(); ) {
                 QueryRow row = it.next();
                 Map<String, Object> sample = ((Map<String, Object>) row.getValue());
                 if (sample.get("app_name").equals(mAppName) && sample.get("location_id").equals(mLocationId)) {
-                    System.out.println(sample);
                     samples.add(sample);
                 }
             }
@@ -312,10 +307,7 @@ public class CBLite extends CordovaPlugin {
             callback.error("");
             return false;
         }
-
-        System.out.println("--- sampleSet");
-        System.out.println(sampleSet);
-
+        
         if (sampleSet == null) {
             callback.error("No sampleSet found");
             return false;
@@ -400,13 +392,7 @@ public class CBLite extends CordovaPlugin {
         content.put("eol", eol);
         content.put("eolReason", eolReason);
         sampleSet.put("content", content);
-
-        System.out.println("--- map last sample");
-        System.out.println(lastEvaluation);
-        System.out.println(nextEvaluation);
-        System.out.println(content);
-        System.out.println(sampleSet);
-
+        
         return sampleSet;
     }
 
@@ -464,37 +450,48 @@ public class CBLite extends CordovaPlugin {
     }
 
     private void mapAndPushLastSample(final Map<String, Object> lastSample, final Map<String, Object> sampleSet) {
-        if (sampleSet == null || lastSample == null) {
-            return;
-        }
-        Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
-        Map<String, Object> lastSampleContent = (Map<String, Object>) lastSample.get("content");
 
-        Boolean disposed = Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) ?
-                Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) :
-                Boolean.valueOf(String.valueOf(content.get("disposed")));
+        Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
+
+        boolean disposed = false;
+        boolean readyForDisposal = false;
+        boolean eol = false;
+        String endOfLife = null;
+        String eolReason = null;
+        Date beforeToday = new Date();
+        beforeToday.setDate(beforeToday.getDate() - 2);
+        long lastEvaluation = beforeToday.getTime();
+        long nextEvaluation = (new Date()).getTime();
+
+        if (lastSample != null) {
+            Map<String, Object> lastSampleContent = (Map<String, Object>) lastSample.get("content");
+
+            disposed = Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) ?
+                    Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) :
+                    Boolean.valueOf(String.valueOf(content.get("disposed")));
+
+
+            readyForDisposal = Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) ?
+                    Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) :
+                    Boolean.valueOf(String.valueOf(content.get("ready_for_disposal")));
+
+
+            lastEvaluation = Double.valueOf(String.valueOf(lastSample.get("creation_date"))).longValue();
+            Date nextEvaluationDate = new Date(lastEvaluation);
+            nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
+            nextEvaluation = nextEvaluationDate.getTime();
+            endOfLife = String.valueOf(lastSample.get("End-of-Life"));
+            eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
+            eolReason = String.valueOf(lastSample.get("eolReason"));
+        }
 
         content.put("disposed", disposed);
-
-        Boolean readyForDisposal = Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) ?
-                Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) :
-                Boolean.valueOf(String.valueOf(content.get("ready_for_disposal")));
-
         content.put("ready_for_disposal", readyForDisposal);
-
-        long lastEvaluation = Double.valueOf(String.valueOf(lastSample.get("creation_date"))).longValue();
         content.put("last_evaluation", lastEvaluation);
-        Date nextEvaluationDate = new Date(lastEvaluation);
-        nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
-        long nextEvaluation = nextEvaluationDate.getTime();
         content.put("next_evaluation", nextEvaluation);
-        String endOfLife = String.valueOf(lastSample.get("End-of-Life"));
         content.put("End-of-Life", endOfLife);
-        Boolean eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
         content.put("eol", eol);
-        String eolReason = String.valueOf(lastSample.get("eolReason"));
         content.put("eolReason", eolReason);
-
         sampleSet.put("content", content);
 
         shownSamplesets.add(sampleSet);
