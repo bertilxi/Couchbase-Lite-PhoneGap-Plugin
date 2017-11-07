@@ -243,7 +243,7 @@ public class CBLite extends CordovaPlugin {
             Date lastEvaluationDate = new Date();
             lastEvaluationDate.setDate(lastEvaluationDate.getDate() - 2);
             content.put("last_evaluation", lastEvaluationDate.getTime());
-            Long nextEvaluation = (new Date()).getTime();
+            long nextEvaluation = (new Date()).getTime();
             content.put("next_evaluation", nextEvaluation);
 
             sampleSet.put("content", content);
@@ -321,17 +321,21 @@ public class CBLite extends CordovaPlugin {
 
         sampleSet = mapLastSample(samples, sampleSet);
 
-        System.out.println(sampleSet);
-
         final JSONObject result = new JSONObject(sampleSet);
         callback.success(result);
         return true;
     }
 
     private Map<String, Object> getLastSample(final List<Map<String, Object>> samples, final String parentId) {
-        if (samples != null && samples.size() == 1) {
+
+        if(samples == null){
+            return null;
+        }
+
+        if (samples.size() == 1) {
             return samples.get(0);
         }
+
         Map<String, Object> lastSample = null;
         for (Map<String, Object> sample : samples) {
             String mParentId = String.valueOf(sample.get("parent_id"));
@@ -353,7 +357,7 @@ public class CBLite extends CordovaPlugin {
     private Map<String, Object> mapLastSample(final List<Map<String, Object>> samples,final Map<String, Object> sampleSet) {
         String parentId = String.valueOf(sampleSet.get("_id"));
         Map<String, Object> lastSample = getLastSample(samples, parentId);
-        
+
         if (lastSample == null) {
             return sampleSet;
         }
@@ -373,20 +377,27 @@ public class CBLite extends CordovaPlugin {
 
         content.put("ready_for_disposal", readyForDisposal);
 
-        Long lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+        long lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
         content.put("last_evaluation", lastEvaluation);
         Date nextEvaluationDate = new Date(lastEvaluation);
         nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
-        Long nextEvaluation = nextEvaluationDate.getTime();
+        long nextEvaluation = nextEvaluationDate.getTime();
         content.put("next_evaluation", nextEvaluation);
         String endOfLife = String.valueOf(lastSample.get("End-of-Life"));
         content.put("End-of-Life", endOfLife);
-        Boolean eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
+        boolean eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
         content.put("eol", eol);
         String eolReason = String.valueOf(lastSample.get("eolReason"));
         content.put("eolReason", eolReason);
 
         sampleSet.put("content", content);
+
+        System.out.println("--- map last sample");
+        System.out.println(lastEvaluation);
+        System.out.println(nextEvaluation);
+        System.out.println(content);
+        System.out.println(sampleSet);
+
         return sampleSet;
     }
 
@@ -462,11 +473,11 @@ public class CBLite extends CordovaPlugin {
 
         content.put("ready_for_disposal", readyForDisposal);
 
-        Long lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+        long lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
         content.put("last_evaluation", lastEvaluation);
         Date nextEvaluationDate = new Date(lastEvaluation);
         nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
-        Long nextEvaluation = nextEvaluationDate.getTime();
+        long nextEvaluation = nextEvaluationDate.getTime();
         content.put("next_evaluation", nextEvaluation);
         String endOfLife = String.valueOf(lastSample.get("End-of-Life"));
         content.put("End-of-Life", endOfLife);
