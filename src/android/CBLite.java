@@ -267,13 +267,17 @@ public class CBLite extends CordovaPlugin {
         for (Map<String, Object> sample : samples) {
             String parentId = String.valueOf(sample.get("parent_id"));
             Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
-            Long lastSampleCreationDate = 0L;
+            long lastSampleCreationDate = 0L;
 
             if (lastSample != null) {
-                lastSampleCreationDate = Long.valueOf(lastSample.get("creation_date").toString());
+                lastSampleCreationDate = Long.valueOf((String) lastSample.get("creation_date")).longValue();
             }
 
-            Long sampleCreationDate = Long.valueOf(sample.get("creation_date").toString());
+            System.out.println("--- Long");
+            System.out.println(sample.get("creation_date"));
+            System.out.println((String) sample.get("creation_date"));
+
+            long sampleCreationDate = Long.valueOf((String) sample.get("creation_date")).longValue();
             if (lastSample == null || lastSampleCreationDate < sampleCreationDate) {
                 lastSamples.put(parentId, sample);
             }
