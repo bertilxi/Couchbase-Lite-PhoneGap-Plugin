@@ -140,7 +140,7 @@ public class CBLite extends CordovaPlugin {
             sampleSetView.setMap(new Mapper() {
                 @Override
                 public void map(Map<String, Object> document, Emitter emitter) {
-                    String type = (String) document.get("type");
+                    String type = String.valueOf(document.get("type"));
                     if (view.equals(type)) {
                         emitter.emit(document, null);
                     }
@@ -237,6 +237,11 @@ public class CBLite extends CordovaPlugin {
             return false;
         }
 
+        for (Map<String, Object> sample : samples) {
+            System.out.println("--- sample");
+            System.out.println(sample);
+        }
+
         buildLastSamples(samples);
         separateNotEvaluatedSampleSets(sampleSets, samples);
         for (Map<String, Object> sampleSet : shownSamplesets) {
@@ -330,15 +335,15 @@ public class CBLite extends CordovaPlugin {
         Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
         Map<String, Object> lastSampleContent = (Map<String, Object>) lastSample.get("content");
 
-        Boolean disposed = Boolean.valueOf((String) lastSampleContent.get("disposed")) ?
-                Boolean.valueOf((String) lastSampleContent.get("disposed")) :
-                Boolean.valueOf((String) content.get("disposed"));
+        Boolean disposed = Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) ?
+                Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) :
+                Boolean.valueOf(String.valueOf(content.get("disposed")));
 
         content.put("disposed", disposed);
 
-        Boolean readyForDisposal = Boolean.valueOf((String) lastSampleContent.get("ready_for_disposal")) ?
-                Boolean.valueOf((String) lastSampleContent.get("ready_for_disposal")) :
-                Boolean.valueOf((String) content.get("ready_for_disposal"));
+        Boolean readyForDisposal = Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) ?
+                Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) :
+                Boolean.valueOf(String.valueOf(content.get("ready_for_disposal")));
 
         content.put("ready_for_disposal", readyForDisposal);
 
@@ -350,7 +355,7 @@ public class CBLite extends CordovaPlugin {
         content.put("next_evaluation", nextEvaluation);
         String endOfLife = String.valueOf(lastSample.get("End-of-Life"));
         content.put("End-of-Life", endOfLife);
-        Boolean eol = Boolean.valueOf((String) lastSample.get("eol"));
+        Boolean eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
         content.put("eol", eol);
         String eolReason = String.valueOf(lastSample.get("eolReason"));
         content.put("eolReason", eolReason);
