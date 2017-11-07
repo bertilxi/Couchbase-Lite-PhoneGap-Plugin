@@ -197,11 +197,11 @@ public class CBLite extends CordovaPlugin {
         sampleSetsQuery.setMapOnly(true);
         samplesQuery.setMapOnly(true);
 
-        evaluatedSampleSets = new ArrayList<>();
-        shownSamplesets = new ArrayList<>();
-        lastSamples = new HashMap<>();
-        List<Map<String, Object>> sampleSets = new ArrayList<>();
-        List<Map<String, Object>> samples = new ArrayList<>();
+        evaluatedSampleSets = new ArrayList<Map<String, Object>>();
+        shownSamplesets = new ArrayList<Map<String, Object>>();
+        lastSamples = new HashMap<String, Object>();
+        List<Map<String, Object>> sampleSets = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> samples = new ArrayList<Map<String, Object>>();
 
         try {
             QueryEnumerator samplesResult = samplesQuery.run();
