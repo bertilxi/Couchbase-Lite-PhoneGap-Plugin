@@ -105,6 +105,10 @@ public class CBLite extends CordovaPlugin {
             return getSampleSets(callback, args);
         }
 
+        if (action.equals("getSampleSetById")) {
+            return getSampleSetById(callback, args);
+        }
+
         if (action.equals("getSamples")) {
             return getSamples(callback, args);
         }
@@ -133,7 +137,7 @@ public class CBLite extends CordovaPlugin {
         return true;
     }
 
-    private void createView(Database database, final String view) {
+    private void createView(final Database database, final String view) {
         final View sampleSetView = database.getView(view);
 
         if (sampleSetView.getMap() == null) {
@@ -142,7 +146,7 @@ public class CBLite extends CordovaPlugin {
                 public void map(Map<String, Object> document, Emitter emitter) {
                     String type = String.valueOf(document.get("type"));
                     if (view.equals(type)) {
-                        emitter.emit(document, null);
+                        emitter.emit(document.get("id"), document);
                     }
                 }
             }, "1.0");
@@ -208,29 +212,29 @@ public class CBLite extends CordovaPlugin {
 
             for (Iterator<QueryRow> it = samplesResult; it.hasNext(); ) {
                 QueryRow row = it.next();
-                Map<String, Object> sample = ((Map<String, Object>) row.getKey());
+                Map<String, Object> sample = ((Map<String, Object>) row.getValue());
                 if (sample.get("app_name").equals(mAppName) && sample.get("location_id").equals(mLocationId)) {
                     samples.add(sample);
                 }
             }
-            
+
             QueryEnumerator sampleSetsresult = sampleSetsQuery.run();
 
             for (Iterator<QueryRow> it = sampleSetsresult; it.hasNext(); ) {
                 QueryRow row = it.next();
-                Map<String, Object> sampleSet = ((Map<String, Object>) row.getKey());
+                Map<String, Object> sampleSet = ((Map<String, Object>) row.getValue());
                 if (sampleSet.get("app_name").equals(mAppName) && sampleSet.get("location_id").equals(mLocationId)) {
                     sampleSets.add(sampleSet);
                 }
             }
-            
+
         } catch (CouchbaseLiteException e) {
             callback.error("db error");
             e.printStackTrace();
             callback.error("");
             return false;
         }
-        
+
         buildLastSamples(samples);
         separateNotEvaluatedSampleSets(sampleSets, samples);
         for (Map<String, Object> sampleSet : shownSamplesets) {
@@ -245,18 +249,152 @@ public class CBLite extends CordovaPlugin {
             sampleSet.put("content", content);
         }
         buildShownSampleSets(evaluatedSampleSets);
-        
+
         final JSONArray result = new JSONArray(shownSamplesets);
         callback.success(result);
         return true;
     }
 
-    private void buildLastSamples(List<Map<String, Object>> samples) {
+    private boolean getSampleSetById(final CallbackContext callback, final JSONArray args) {
+
+        String dbName = "";
+        String mAppName = "";
+        Integer mLocationId = -1;
+        String docId = "";
+
+        try {
+            dbName = args.getString(0);
+            mAppName = args.getString(1);
+            mLocationId = args.getInt(2);
+            docId = args.getString(3);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final Database database = getDb(dbName);
+
+        final Query sampleSetsQuery = database.getView("sampleset").createQuery();
+        final Query samplesQuery = database.getView("sample").createQuery();
+        sampleSetsQuery.setMapOnly(true);
+        samplesQuery.setMapOnly(true);
+
+        Map<String, Object> sampleSet = null;
+        final List<Map<String, Object>> samples = new ArrayList<Map<String, Object>>();
+
+        try {
+            QueryEnumerator samplesResult = samplesQuery.run();
+
+            for (Iterator<QueryRow> it = samplesResult; it.hasNext(); ) {
+                QueryRow row = it.next();
+                Map<String, Object> sample = ((Map<String, Object>) row.getValue());
+                if (sample.get("app_name").equals(mAppName) && sample.get("location_id").equals(mLocationId)) {
+                    samples.add(sample);
+                }
+            }
+
+            QueryEnumerator sampleSetsresult = sampleSetsQuery.run();
+
+            for (Iterator<QueryRow> it = sampleSetsresult; it.hasNext(); ) {
+                QueryRow row = it.next();
+                Map<String, Object> mSampleSet = ((Map<String, Object>) row.getValue());
+                String sampleSetId = row.getDocumentId();
+                if (mSampleSet.get("app_name").equals(mAppName) && mSampleSet.get("location_id").equals(mLocationId) && sampleSetId.equals(docId)) {
+                    sampleSet = mSampleSet;
+                    break;
+                }
+            }
+
+        } catch (CouchbaseLiteException e) {
+            callback.error("db error");
+            e.printStackTrace();
+            callback.error("");
+            return false;
+        }
+
+        System.out.print("--- sampleSet");
+        System.out.print(sampleSet);
+        
+        if (sampleSet == null) {
+            callback.error("No sampleSet found");
+            return false;
+        }
+        
+        sampleSet = mapLastSample(samples, sampleSet);
+
+        System.out.print(sampleSet);
+
+        final JSONObject result = new JSONObject(sampleSet);
+        callback.success(result);
+        return true;
+    }
+
+    private Map<String, Object> getLastSample(final List<Map<String, Object>> samples, final String parentId) {
+        if (samples != null && samples.size() == 1) {
+            return samples.get(0);
+        }
+        Map<String, Object> lastSample = null;
+        for (Map<String, Object> sample : samples) {
+            String mParentId = String.valueOf(sample.get("parent_id"));
+            if (!parentId.equals(mParentId)) {
+                continue;
+            }
+            long lastSampleCreationDate = 0L;
+            if (lastSample != null) {
+                lastSampleCreationDate = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+            }
+            long sampleCreationDate = Long.valueOf(String.valueOf(sample.get("creation_date")));
+            if (lastSample == null || lastSampleCreationDate < sampleCreationDate) {
+                lastSample = sample;
+            }
+        }
+        return lastSample;
+    }
+
+    private Map<String, Object> mapLastSample(final List<Map<String, Object>> samples,final Map<String, Object> sampleSet) {
+        String parentId = String.valueOf(sampleSet.get("_id"));
+        Map<String, Object> lastSample = getLastSample(samples, parentId);
+        if (sampleSet == null || lastSample == null) {
+            return null;
+        }
+
+        Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
+        Map<String, Object> lastSampleContent = (Map<String, Object>) lastSample.get("content");
+
+        Boolean disposed = Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) ?
+                Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) :
+                Boolean.valueOf(String.valueOf(content.get("disposed")));
+
+        content.put("disposed", disposed);
+
+        Boolean readyForDisposal = Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) ?
+                Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) :
+                Boolean.valueOf(String.valueOf(content.get("ready_for_disposal")));
+
+        content.put("ready_for_disposal", readyForDisposal);
+
+        Long lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+        content.put("last_evaluation", lastEvaluation);
+        Date nextEvaluationDate = new Date(lastEvaluation);
+        nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
+        Long nextEvaluation = nextEvaluationDate.getTime();
+        content.put("next_evaluation", nextEvaluation);
+        String endOfLife = String.valueOf(lastSample.get("End-of-Life"));
+        content.put("End-of-Life", endOfLife);
+        Boolean eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
+        content.put("eol", eol);
+        String eolReason = String.valueOf(lastSample.get("eolReason"));
+        content.put("eolReason", eolReason);
+
+        sampleSet.put("content", content);
+        return sampleSet;
+    }
+
+    private void buildLastSamples(final List<Map<String, Object>> samples) {
         for (Map<String, Object> sample : samples) {
             String parentId = String.valueOf(sample.get("parent_id"));
             Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
             long lastSampleCreationDate = 0L;
-            
+
             try {
                 if (lastSample != null) {
                     lastSampleCreationDate = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
@@ -273,7 +411,7 @@ public class CBLite extends CordovaPlugin {
         }
     }
 
-    private void separateNotEvaluatedSampleSets(List<Map<String, Object>> sampleSets, List<Map<String, Object>> samples) {
+    private void separateNotEvaluatedSampleSets(final List<Map<String, Object>> sampleSets, final List<Map<String, Object>> samples) {
         List<Map<String, Object>> sampleSetsCopy = new ArrayList<Map<String, Object>>(sampleSets);
         for (Map<String, Object> sampleSet : sampleSetsCopy) {
             String parentId = String.valueOf(sampleSet.get("_id"));
@@ -286,7 +424,7 @@ public class CBLite extends CordovaPlugin {
         }
     }
 
-    private boolean findSampleSet(List<Map<String, Object>> samples, String parentId) {
+    private boolean findSampleSet(final List<Map<String, Object>> samples, final String parentId) {
         for (Map<String, Object> sample : samples) {
             String mParentId = String.valueOf(sample.get("parent_id"));
             if (mParentId.equals(parentId)) {
@@ -296,7 +434,7 @@ public class CBLite extends CordovaPlugin {
         return false;
     }
 
-    private void buildShownSampleSets(List<Map<String, Object>> sampleSets) {
+    private void buildShownSampleSets(final List<Map<String, Object>> sampleSets) {
         for (Map<String, Object> sampleSet : sampleSets) {
             String parentId = String.valueOf(sampleSet.get("_id"));
             Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
@@ -304,8 +442,8 @@ public class CBLite extends CordovaPlugin {
         }
     }
 
-    private void mapAndPushLastSample(Map<String, Object> lastSample, Map<String, Object> sampleSet) {
-        if (lastSample == null) {
+    private void mapAndPushLastSample(final Map<String, Object> lastSample, final Map<String, Object> sampleSet) {
+        if (sampleSet == null || lastSample == null) {
             return;
         }
         Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
@@ -366,7 +504,7 @@ public class CBLite extends CordovaPlugin {
             JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
                 QueryRow row = it.next();
-                Map<String, Object> obj = ((Map<String, Object>) row.getKey());
+                Map<String, Object> obj = ((Map<String, Object>) row.getValue());
                 if (obj.get("app_name").equals(mAppName) && obj.get("location_id").equals(mLocationId)) {
                     String json = gson.toJson(row.getKey());
                     JSONObject sampleSet = new JSONObject(json);
@@ -412,7 +550,7 @@ public class CBLite extends CordovaPlugin {
             JSONArray sampleSetsResult = new JSONArray();
             for (Iterator<QueryRow> it = result; it.hasNext(); ) {
                 QueryRow row = it.next();
-                Map<String, Object> obj = ((Map<String, Object>) row.getKey());
+                Map<String, Object> obj = ((Map<String, Object>) row.getValue());
                 if (obj.get("app_name").equals(mAppName) && obj.get("location_id").equals(mLocationId)) {
                     String json = gson.toJson(row.getKey());
                     JSONObject sampleSet = new JSONObject(json);
@@ -442,7 +580,7 @@ public class CBLite extends CordovaPlugin {
         return database;
     }
 
-    protected Manager startCBLite(Context context) {
+    protected Manager startCBLite(final Context context) {
         try {
             Manager.enableLogging(Log.TAG, Log.VERBOSE);
             Manager.enableLogging(Log.TAG_SYNC, Log.VERBOSE);
@@ -463,7 +601,7 @@ public class CBLite extends CordovaPlugin {
         return manager;
     }
 
-    private int startCBLListener(int listenPort, Manager manager, Credentials allowedCredentials) {
+    private int startCBLListener(final int listenPort, final Manager manager, final Credentials allowedCredentials) {
         listener = new LiteListener(manager, listenPort, allowedCredentials);
         int boundPort = listener.getListenPort();
         Thread thread = new Thread(listener);
@@ -471,11 +609,11 @@ public class CBLite extends CordovaPlugin {
         return boundPort;
     }
 
-    public void onResume(boolean multitasking) {
+    public void onResume(final boolean multitasking) {
         System.out.println("CBLite.onResume() called");
     }
 
-    public void onPause(boolean multitasking) {
+    public void onPause(final boolean multitasking) {
         System.out.println("CBLite.onPause() called");
     }
 
