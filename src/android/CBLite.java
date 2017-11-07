@@ -264,7 +264,6 @@ public class CBLite extends CordovaPlugin {
     }
 
     private void buildLastSamples(List<Map<String, Object>> samples) {
-
         for (Map<String, Object> sample : samples) {
             String parentId = String.valueOf(sample.get("parent_id"));
             Map<String, Object> lastSample = (Map<String, Object>) lastSamples.get(parentId);
@@ -276,9 +275,12 @@ public class CBLite extends CordovaPlugin {
             Long lastSampleCreationDate = Long.valueOf((String) lastSample.get("creation_date"));
             Long sampleCreationDate = Long.valueOf((String) sample.get("creation_date"));
             if (lastSample == null || (lastSample != null && lastSampleCreationDate < sampleCreationDate)) {
-                lastSamples.put(parentId.toString(), sample);
+                lastSamples.put(parentId, sample);
             }
         }
+        System.out.println("--- buildLastSamples");
+        System.out.println(lastSamples);
+        System.out.println(lastSamples.size());
     }
 
     private void separateNotEvaluatedSampleSets(List<Map<String, Object>> sampleSets, List<Map<String, Object>> samples) {
@@ -295,8 +297,8 @@ public class CBLite extends CordovaPlugin {
     }
 
     private boolean findSampleSet(List<Map<String, Object>> samples, String parentId) {
-        for (Map<String, Object> sampleSet : samples) {
-            String mParentId = String.valueOf(sampleSet.get("parent_id"));
+        for (Map<String, Object> sample : samples) {
+            String mParentId = String.valueOf(sample.get("parent_id"));
             if (mParentId.equals(parentId)) {
                 return true;
             }
