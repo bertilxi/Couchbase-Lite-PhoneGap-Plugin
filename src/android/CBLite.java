@@ -328,7 +328,7 @@ public class CBLite extends CordovaPlugin {
 
     private Map<String, Object> getLastSample(final List<Map<String, Object>> samples, final String parentId) {
 
-        if(samples == null){
+        if (samples == null) {
             return null;
         }
 
@@ -354,42 +354,49 @@ public class CBLite extends CordovaPlugin {
         return lastSample;
     }
 
-    private Map<String, Object> mapLastSample(final List<Map<String, Object>> samples,final Map<String, Object> sampleSet) {
+    private Map<String, Object> mapLastSample(final List<Map<String, Object>> samples, final Map<String, Object> sampleSet) {
         String parentId = String.valueOf(sampleSet.get("_id"));
         Map<String, Object> lastSample = getLastSample(samples, parentId);
+        Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
 
-        if (lastSample == null) {
-            return sampleSet;
+        boolean disposed = false;
+        boolean readyForDisposal = false;
+        boolean eol = false;
+        String endOfLife = null;
+        String eolReason = null;
+        Date beforeToday = new Date();
+        beforeToday.setDate(beforeToday.getDate() - 2);
+        long lastEvaluation = beforeToday.getTime();
+        long nextEvaluation = (new Date()).getTime();
+
+        if (lastSample != null) {
+            Map<String, Object> lastSampleContent = (Map<String, Object>) lastSample.get("content");
+
+            disposed = Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) ?
+                    Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) :
+                    Boolean.valueOf(String.valueOf(content.get("disposed")));
+
+
+            readyForDisposal = Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) ?
+                    Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) :
+                    Boolean.valueOf(String.valueOf(content.get("ready_for_disposal")));
+
+            lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
+            Date nextEvaluationDate = new Date(lastEvaluation);
+            nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
+            nextEvaluation = nextEvaluationDate.getTime();
+            endOfLife = String.valueOf(lastSample.get("End-of-Life"));
+            eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
+            eolReason = String.valueOf(lastSample.get("eolReason"));
         }
 
-        Map<String, Object> content = (Map<String, Object>) sampleSet.get("content");
-        Map<String, Object> lastSampleContent = (Map<String, Object>) lastSample.get("content");
-
-        Boolean disposed = Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) ?
-                Boolean.valueOf(String.valueOf(lastSampleContent.get("disposed"))) :
-                Boolean.valueOf(String.valueOf(content.get("disposed")));
-
         content.put("disposed", disposed);
-
-        Boolean readyForDisposal = Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) ?
-                Boolean.valueOf(String.valueOf(lastSampleContent.get("ready_for_disposal"))) :
-                Boolean.valueOf(String.valueOf(content.get("ready_for_disposal")));
-
         content.put("ready_for_disposal", readyForDisposal);
-
-        long lastEvaluation = Long.valueOf(String.valueOf(lastSample.get("creation_date")));
         content.put("last_evaluation", lastEvaluation);
-        Date nextEvaluationDate = new Date(lastEvaluation);
-        nextEvaluationDate.setDate(nextEvaluationDate.getDate() + 1);
-        long nextEvaluation = nextEvaluationDate.getTime();
         content.put("next_evaluation", nextEvaluation);
-        String endOfLife = String.valueOf(lastSample.get("End-of-Life"));
         content.put("End-of-Life", endOfLife);
-        boolean eol = Boolean.valueOf(String.valueOf(lastSample.get("eol")));
         content.put("eol", eol);
-        String eolReason = String.valueOf(lastSample.get("eolReason"));
         content.put("eolReason", eolReason);
-
         sampleSet.put("content", content);
 
         System.out.println("--- map last sample");
